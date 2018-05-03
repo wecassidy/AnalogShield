@@ -91,8 +91,8 @@ int get_adc(char channel, unsigned short arg) {
     for (int i = 0; i < arg; i++) {
       unsigned short reading = analog.read(channel-'0');
 
-      Serial.write(reading >> 8); // Write the first byte
-      Serial.write(reading & 0x00ff); // Write the second byte
+      Serial.print(reading, HEX);
+      Serial.print(",");
     }
   } else {
     return -1; // Invalid channel

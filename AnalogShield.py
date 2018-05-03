@@ -90,15 +90,6 @@ class AnalogShield(object):
         while response == "" or response[-1] != ";":
             response += self.device.read()
 
-        # If the command was to read ADC values, it may have stopped
-        # reading the response early because one of the bytes was 0x3b
-        # (semicolon), the response terminator. This code makes sure
-        # all the response bytes (2*number of readings + terminator
-        # character) are read.
-        if identifier[0].lower() == "a" and response != "??;":
-            while len(response) < 2*arg+1:
-                response += self.device.read()
-
         return response[:-1] # Strip the semicolon
 
     def adc_calibrate(self, channel, multimeter_address):
@@ -350,9 +341,7 @@ class AnalogShield(object):
         if 0 <= channel <= 3:
             # Extract values from the response
             response = self.write("A"+str(channel), samples)
-            bit_vals = []
-            for (msb, lsb) in zip(response[0::2], response[1::2]):
-                bit_vals.append((ord(msb) << 8) + ord(lsb))
+            bit_vals = (int(x, 16) for x in response.split(","))
 
             # Convert to volts
             voltages = [AnalogShield.bits_to_volts(b) for b in bit_vals]
