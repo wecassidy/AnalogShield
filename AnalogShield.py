@@ -9,20 +9,13 @@ import time
 import warnings
 
 class AnalogShield(object):
-    def __init__(self, address, shield_id, calibration_location=None):
+    def __init__(self, address, calibration_location=None):
         """
         address: the serial port of the shield.
-
-        shield_id: a unique identifier for each analog shield. It
-        doesn't matter what it is, but it must be different for each
-        shield.
 
         calibration_location: if provided, DAC and ADC calibration
         will be loaded from and saved to this file.
         """
-
-        # A unique identifier for each analog shield - located on the deice
-        self.SHIELD_ID = shield_id
 
         self.device = serial.Serial(port=address, baudrate=2e6, timeout=0)
         time.sleep(3) # Ensure the first bytes of serial communication aren't dropped
@@ -46,9 +39,8 @@ class AnalogShield(object):
             with open(self.calibration_location) as calibration_file:
                 calibration = pickle.load(calibration_file)
 
-                if self.SHIELD_ID in calibration: # Check that this analog shield has a saved calibration
-                    self.adc_correct = calibration[self.SHIELD_ID]["adc"]
-                    self.dac_correct = calibration[self.SHIELD_ID]["dac"]
+                self.adc_correct = calibration[self.SHIELD_ID]["adc"]
+                self.dac_correct = calibration[self.SHIELD_ID]["dac"]
 
         # Reset to known default state
         self.queue_off()
@@ -132,10 +124,10 @@ class AnalogShield(object):
                 with open(self.calibration_location) as calibration_file:
                     calibration = pickle.load(calibration_file)
             else:
-                calibration = {self.SHIELD_ID: {"adc": self.adc_correct, "dac": self.dac_correct}}
+                calibration = {"adc": self.adc_correct, "dac": self.dac_correct}
 
             # Update the calibration
-            calibration[self.SHIELD_ID]["adc"][channel] = self.dac_correct[channel]
+            calibration["adc"][channel] = self.dac_correct[channel]
 
             with open(self.calibration_location, "w") as calibration_file:
                 pickle.dump(calibration, calibration_file)
@@ -170,10 +162,10 @@ class AnalogShield(object):
                 with open(self.calibration_location) as calibration_file:
                     calibration = pickle.load(calibration_file)
             else:
-                calibration = {self.SHIELD_ID: {"adc": self.adc_correct, "dac": self.dac_correct}}
+                calibration = {"adc": self.adc_correct, "dac": self.dac_correct}
 
             # Update the calibration
-            calibration[self.SHIELD_ID]["dac"][channel] = self.dac_correct[channel]
+            calibration["dac"][channel] = self.dac_correct[channel]
 
             with open(self.calibration_location, "w") as calibration_file:
                 pickle.dump(calibration, calibration_file)
@@ -385,5 +377,3 @@ class AnalogShield(object):
         """
 
         return chr(n >> 8) + chr(n & 0x00ff)
-
-AS = AnalogShield
