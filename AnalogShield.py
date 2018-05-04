@@ -3,7 +3,6 @@ from __future__ import print_function, division
 import numpy as np # For calculating means and standard deviations
 import os.path # For saving ADC and DAC calibration
 import pickle # For reading and saving calibration to a file
-import RigolInstruments as RI # For interfacing with the multimeter when calibrating
 import serial # For communicating with the Arduino
 import time
 import warnings
@@ -84,17 +83,17 @@ class AnalogShield(object):
 
         return response[:-1] # Strip the semicolon
 
-    def adc_calibrate(self, channel, multimeter_address):
+    def adc_calibrate(self, channel, multimeter):
         """
-        There exists a scaling factor on each ADC channel, for some
+        There exists a linear error on each ADC channel, for some
         reason. This method determines it and saves the results to a
         compensation table (AnalogShield.adc_correct). To perform the
-        calibration, a Rigol DM3058 (or compatible) multimeter must be
-        attached to the computer.
+        calibration, connect DAC channel 0 to the ADC being
+        calibrated. A multimeter with a Python interface must also be
+        attached to the computer. How that multimeter works is
+        irrelevant, as long as the Python interface has a method
+        voltage() that returns a number.
         """
-
-        # Connect to the multimeter
-        multimeter = RI.DM3058(multimeter_address)
 
         actual_readings = []
         adc_readings = []
@@ -133,8 +132,15 @@ class AnalogShield(object):
                 pickle.dump(calibration, calibration_file)
 
     def dac_calibrate(self, channel, multimeter_address):
-        # Connect to the multimeter
-        multimeter = RI.DM3058(multimeter_address)
+        """
+        There exists a linear error on each DAC channel, for some
+        reason. This method determines it and saves the results to a
+        compensation table (AnalogShield.dac_correct). To perform the
+        calibration, a multimeter with a Python interface must be
+        attached to the computer. How that multimeter works is
+        irrelevant, as long as the Python interface has a method
+        voltage() that returns a number.
+        """
 
         input_v = [v for v in range(-5, 6)]
         dac_output = []
