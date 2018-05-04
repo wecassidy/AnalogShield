@@ -46,6 +46,14 @@ has a few consequences:
 The ramping code works by calculating the voltage at the current time
 using the ramp function, then clipping if it goes out of range.
 
+These are the functions that define the various ramps:
+- Triangle: `V(t) = amplitude * (|(t - phase shift) % period -
+  period/2| / (period/4) - 1) + offset`
+- Sin: `V(t) = amplitude * sin(2π/period * (t - phase shift)) +
+  offset`
+- Square: `V(t) = amplitude * (-1)^floor((t - phase shift) / period) +
+  offset`
+
 # Serial protocol
 The protocol works on a command-response basis: the Python side sends
 a command, then blocks until the Arduino finishes executing the
