@@ -4,6 +4,48 @@ Arduino side (which controls the Analog Shield), the Python side
 (which is what is exposed to the user), and the serial protocol that
 communicates between the two.
 
+# Arduino
+Basic flow of the Arduino program:
+
+1. Read whatever is available in the serial in buffer
+2. If the command is fully received, process it
+   1. Split the command into identifier (first two characters) and
+      argument
+   2. Convert the argument from two bytes into an unsigned short
+3. Run the ramp
+
+Each group of commands (based on first character) has its own function
+that processes the specific command and the argument. They return a
+status code to determine successful execution (zero for success,
+nonzero for an error).
+
+## Converting the argument
+We want to go from two separate bytes (for example, `0x4f` and `0x2b`)
+to one two-byte number (`0x4f2b`). To do this, shift the first byte
+left eight bits and add the second byte. Here's what the process looks
+like in binary:
+
+```
+Input bytes: 0100 1111, 0010 1011
+
+Step 1: 0100 1111 << 8 = 0100 1111 0000 0000
+Step 2: 0100 1111 0000 0000 + 0010 1011 = 0100 1111 0010 1011
+```
+
+## Ramping
+Each ramp shape is defined as a function of time since the Arduino
+started executing (in microseconds to be as correct as possible). This
+has a few consequences:
+
+- Ramps with the same period are in phase
+- It's very easy to add another ramp shape, simply define another ramp
+  function
+- There will be a discontinuity when the microseconds counter rolls
+  over (approximately 70 minutes after the program starts)
+
+The ramping code works by calculating the voltage at the current time
+using the ramp function, then clipping if it goes out of range.
+
 # Serial protocol
 The protocol works on a command-response basis: the Python side sends
 a command, then blocks until the Arduino finishes executing the
