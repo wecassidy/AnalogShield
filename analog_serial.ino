@@ -92,7 +92,10 @@ int get_adc(char channel, unsigned short arg) {
       unsigned short reading = analog.read(channel-'0');
 
       Serial.print(reading, HEX);
-      Serial.print(",");
+
+      if (i != arg-1) { // Print separator if this isn't the last value
+        Serial.print(',');
+      }
     }
   } else {
     return -1; // Invalid channel
