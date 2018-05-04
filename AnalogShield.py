@@ -151,7 +151,7 @@ class AnalogShield(object):
         self.analog_write(channel, -5, correct=False)
         time.sleep(2)
         for v_out in input_v: # Go from -5 to 5V in 1V steps
-            self.analog_write(0, v_out, correct=False)
+            self.analog_write(channel, v_out, correct=False)
 
             # Collect data
             time.sleep(0.01) # Delay to let the multimeter adjust
