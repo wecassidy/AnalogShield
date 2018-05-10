@@ -70,16 +70,20 @@ class AnalogShield(object):
         """
 
         ## Write the command
-        command = identifier + AnalogShield.encode_num(arg) # Build the command
+        # Convert the command into a series of bytes
+        byte_list = bytearray([ord(char) for char in identifier])
+        byte_list.extend(AnalogShield.encode_num(arg))
+
+        command = bytes(byte_list) # Convert from a series of bytes to a string-ish
         self.device.write(command)
 
         ## Read the response
         # The response to a command is always terminated by a
         # semicolon, so keep polling the input buffer until we read
         # one.
-        response = self.device.read()
+        response = self.device.read().decode()
         while response == "" or response[-1] != ";":
-            response += self.device.read()
+            response += self.device.read().decode()
 
         return response[:-1] # Strip the semicolon
 
@@ -377,9 +381,18 @@ class AnalogShield(object):
     @staticmethod
     def encode_num(n):
         """
-        Convert a 16-bit number to a two-character string where the 8 MSB
-        are converted to the first character and the 8 LSB are converted
-        to the second character.
+        Convert a 16-bit number to two separate bytes in MSB, LSB
+        order.
+
+        How it works:
+
+            - Input bytes: 0100 1111 0010 1011
+
+            - MSB: shift right eight bits, discarding the rightmost
+              bits
+
+            - LSB: bitwise AND with 0000 0000 1111 1111, setting the
+              leftmost byte to zero
         """
 
-        return chr(n >> 8) + chr(n & 0x00ff)
+        return [n >> 8, n & 0x00ff]
