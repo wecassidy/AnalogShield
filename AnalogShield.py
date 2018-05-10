@@ -4,6 +4,7 @@ import numpy as np # For calculating means and standard deviations
 import os.path # For saving ADC and DAC calibration
 import pickle # For reading and saving calibration to a file
 import serial # For communicating with the Arduino
+import sys # Determine what version of Python is running
 import time
 import warnings
 
@@ -74,16 +75,24 @@ class AnalogShield(object):
         byte_list = bytearray([ord(char) for char in identifier])
         byte_list.extend(AnalogShield.encode_num(arg))
 
-        command = bytes(byte_list) # Convert from a series of bytes to a string-ish
-        self.device.write(command)
+        self.device.write(byte_list)
 
         ## Read the response
         # The response to a command is always terminated by a
         # semicolon, so keep polling the input buffer until we read
         # one.
-        response = self.device.read().decode()
-        while response == "" or response[-1] != ";":
-            response += self.device.read().decode()
+        response = self.device.read()
+        while True: # Keep reading until we break out of the loop
+            response += self.device.read()
+
+            if len(response) > 0:
+                if (sys.version_info.major < 3 and response[-1] == ";") or \
+                   (sys.version_info.major >= 3 and response[-1] == 0x3b): # 0x3b is the semicolon character
+                    break
+
+        # If Python 3 (or later), convert to a Unicode string
+        if sys.version_info.major >= 3:
+            response = response.decode("latin-1")
 
         return response[:-1] # Strip the semicolon
 
@@ -133,7 +142,7 @@ class AnalogShield(object):
             calibration["adc"][channel] = self.dac_correct[channel]
 
             with open(self.calibration_location, "w") as calibration_file:
-                pickle.dump(calibration, calibration_file)
+                pickle.dump(calibration, calibration_file, protocol=2) # Use a Python 2--compatible protocol
 
     def dac_calibrate(self, channel, multimeter_address):
         """
@@ -178,7 +187,7 @@ class AnalogShield(object):
             calibration["dac"][channel] = self.dac_correct[channel]
 
             with open(self.calibration_location, "w") as calibration_file:
-                pickle.dump(calibration, calibration_file)
+                pickle.dump(calibration, calibration_file, protocol=2) # Use a Python 2--compatible protocol
 
     # Ramp methods
     def ramp_running(self, channel):
