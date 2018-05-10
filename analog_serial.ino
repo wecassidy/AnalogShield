@@ -159,11 +159,11 @@ void loop() {
     } else if (ident[0] == 'Q' || ident[0] == 'q') {
       status = queue_settings(ident[1], arg);
     } else { // Unrecognized command
-      Serial.print("??");
+      Serial.print("?? unrecognized command");
     }
 
     if (status != 0) { // Something went wrong
-      Serial.print("??");
+      Serial.print("?? other error");
     }
 
     Serial.print(';'); // Always terminate with a semicolon
