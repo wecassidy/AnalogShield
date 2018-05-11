@@ -36,11 +36,11 @@ class AnalogShield(object):
         # If provided, load the calibration from a file
         self.calibration_location = calibration_location
         if self.calibration_location is not None and os.path.exists(calibration_location):
-            with open(self.calibration_location) as calibration_file:
+            with open(self.calibration_location, "rb") as calibration_file:
                 calibration = pickle.load(calibration_file)
 
-                self.adc_correct = calibration[self.SHIELD_ID]["adc"]
-                self.dac_correct = calibration[self.SHIELD_ID]["dac"]
+                self.adc_correct = calibration["adc"]
+                self.dac_correct = calibration["dac"]
 
         # Reset to known default state
         self.queue_off()
@@ -133,18 +133,19 @@ class AnalogShield(object):
         if self.calibration_location is not None:
             # Read the existing calibrations, if the file exists
             if os.path.exists(self.calibration_location):
-                with open(self.calibration_location) as calibration_file:
+                with open(self.calibration_location, "rb") as calibration_file:
                     calibration = pickle.load(calibration_file)
+
             else:
                 calibration = {"adc": self.adc_correct, "dac": self.dac_correct}
 
             # Update the calibration
             calibration["adc"][channel] = self.dac_correct[channel]
 
-            with open(self.calibration_location, "w") as calibration_file:
+            with open(self.calibration_location, "wb") as calibration_file:
                 pickle.dump(calibration, calibration_file, protocol=2) # Use a Python 2--compatible protocol
 
-    def dac_calibrate(self, channel, multimeter_address):
+    def dac_calibrate(self, channel, multimeter):
         """
         There exists a linear error on each DAC channel, for some
         reason. This method determines it and saves the results to a
@@ -178,15 +179,16 @@ class AnalogShield(object):
         if self.calibration_location is not None:
             # Read the existing calibrations, if the file exists
             if os.path.exists(self.calibration_location):
-                with open(self.calibration_location) as calibration_file:
+                with open(self.calibration_location, "rb") as calibration_file:
                     calibration = pickle.load(calibration_file)
+
             else:
                 calibration = {"adc": self.adc_correct, "dac": self.dac_correct}
 
             # Update the calibration
             calibration["dac"][channel] = self.dac_correct[channel]
 
-            with open(self.calibration_location, "w") as calibration_file:
+            with open(self.calibration_location, "wb") as calibration_file:
                 pickle.dump(calibration, calibration_file, protocol=2) # Use a Python 2--compatible protocol
 
     # Ramp methods
