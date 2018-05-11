@@ -86,8 +86,12 @@ class AnalogShield(object):
             response += self.device.read()
 
             if len(response) > 0:
-                if (sys.version_info.major < 3 and response[-1] == ";") or \
-                   (sys.version_info.major >= 3 and response[-1] == 0x3b): # 0x3b is the semicolon character
+                 # In Python 2 slicing bytes results in str, but in
+                 # Python 3 it gives an int. We therefore need to
+                 # check both cases to version-independently determine
+                 # if the character we just read is a semicolon. 0x3b
+                 # is ASCII semicolon.
+                if response[-1] == ";" or response[-1] == 0x3b:
                     break
 
         # If Python 3 (or later), convert to a Unicode string
