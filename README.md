@@ -7,7 +7,7 @@ communicates between the two.
 # Quick start
 1. Upload `analog_shield.ino` to the Arduino
 2. Determine the serial port of the Arduino
-   - Check the Arduino app
+   - Check the Arduino application
    - Mac/Linux only:
    ```
    $ find /dev -name 'ttyUSB*' -o -name 'ttyACM*' -o -name 'ttyAMA*'
@@ -28,7 +28,48 @@ communicates between the two.
 ```
 
 # Python
+## Initialization
+- Initialize serial communications
+  - 2 Mbps baud rate
+  - Set timeout to 0
+- Pause for 3s because it fixed some bugs
+- Initialize ramp with known settings
+  - Enabled: no
+  - Period: 100ms
+  - Amplitude: 5V
+  - Offset: 0V
+  - Phase shift: none
+  - Shape: triangle
+- Load calibrations, if provided
+- Turn off queue mode
+- Set all DACs to 0V
+- For some reason, the first readings from each ADC were sometimes
+  `0x0000`, `0x0000`, `0x00**`. To fix this, take five samples on each
+  channel
 
+## Write
+- Write a command according to the serial specification (see below)
+- Accepts identifier as a string and argument as an int
+- Converts everything to a `bytearray` so that the code works with
+  both Python 2 and 3
+- Write to the serial port
+- Read response
+  - Read one character at a time from the serial input buffer until we
+    read a semicolon
+  - Version compatibility complications
+    - `Serial.read()` returns a `bytes` object
+    - In Python 2, `bytes` and `str` are exactly the same
+      thing. `bytes is str` returns `True`. Thus, slicing a `bytes`
+      object gives a `str`.
+    - In Python 3, `bytes` is a distinct type from `str`. Slicing
+      `bytes` gives the `int` value of the byte.
+    - As a consequence, we need two separate checks to
+      version-independently determine if a semicolon was read (and
+      therefore the response is over). In one, check if the last
+      character of the response is the string `";"`. In the other,
+      check if it is the number `0x3b` (ASCII semicolon).
+- If in Python 3, decode to a Unicode string
+- Strip the semicolon before returning
 
 # Arduino
 Basic flow of the Arduino program:
