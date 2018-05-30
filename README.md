@@ -102,20 +102,84 @@ Example use:
 ## Ramping
 The Analog Shield can output ramps on each DAC channel in
 parallel. There are three available ramp shapes: triangle, sine, and
-square.
+square. Ramp amplitude, period, offset, and phase shift can all be set
+for each channel. Ramps are in phase unless set out of phase with a
+phase shift.
+
+Ramps that exceed the range of the DACs are clamped to ±5V by the
+Arduino.
 
 ### `ramp_running(channel)`: check if a ramp is currently enabled
-Returns `True` if a ramp is running on the given channel. Note that a
-ramp may appear not to be present if its amplitude is comparable to
-the noise of the ADCs.
+Returns `True` if a ramp is running on the given channel. If the
+channel is "all", this will only return `True` if ramps are enabled on
+all channels.
 
 ### `ramp_on(channel)`: enable ramping on a channel
-Enables ramping on the given channel with the current settings. If the
-channel is `"all"`, ramps on all channels are enabled.
+Enables ramping on the given channel with the current settings.
 
 ### `ramp_off(channel)`: disable ramping on a channel
-Disables ramping on the given channel. If the channel is `"all"`,
-ramps on all channels are turned off.
+Disables ramping on the given channel.
+
+### `ramp_period(channel, time=None)`: set the period of the ramp
+Set the period of the ramp, in milliseconds. If a new period is not
+provided, the current value is returned.
+
+Example use:
+```python
+>>> a.ramp_period(1, 100) # Set channel 1's period to 0.1s (10Hz)
+>>> a.ramp_period("all", 31) # Set all periods to 31ms (~32Hz)
+>>> a.ramp_period(3) # Query channel 3's period
+12
+>>> a.ramp_period("all") # Query all periods
+[12, 197, 2632, 1]
+```
+
+### `ramp_amplitude(channel, voltage=None)`: set the amplitude of the ramp
+Set the amplitude of the ramp, in volts. The amplitude of the ramp is
+the difference between the maximum and average voltages. Consequently,
+it must be positive. If a new amplitude is not provided, the current
+value is returned.
+
+Example use:
+``` python
+>>> a.ramp_amplitude(0, 0.14) # Set the amplitude of channel 0 to 0.14V
+>>> a.ramp_amplitude("all", 3.14) # Set all amplitudes to 3.14V
+>>> a.ramp_amplitude(2) # Query channel 2's amplitude
+3.3
+>>> a.ramp_amplitude("all") # Query all amplitudes
+[1, 5, 3.3, 2]
+```
+
+### `ramp_offset(channel, offset=None)`: set the offset of the ramp
+Set the offset of the ramp, in volts. If a new offset is not provided,
+the current value is returned.
+
+Example use:
+``` python
+>>> a.ramp_offset(3, -4.2) # Set the offset of channel 3 to -4.2V
+>>> a.ramp_offset("all", -2.1) # Set all offsets to -2.1V
+>>> a.ramp_offset(0) # Query the offset of channel 0
+3.3
+>>> a.ramp_offset("all") # Query all ramp offsets
+[0, 5, -2, 4.21]
+```
+
+### `ramp_phase(channel, phase=None)`: set the phase of the ramp
+Set the phase shift of the ramp, as a percentage of the period. For
+example, if a ramp with a period of 100ms is given a phase shift of
+10%, it will be offset 10ms. If a new phase shift is not provided, the
+current value is returned.
+
+Example use:
+
+``` python
+>>> a.ramp_phase(2, 50) # Set the offset of channel 2 to 50%
+>>> a.ramp_pahse("all", 12.5) # Set the phase of all channels to 12.5%
+>>> a.ramp_phase(1) # Query the phase of channel 1
+75
+>>> a.ramp_phase("all") # Query all phase shifts
+[30, 10, 50, 90]
+```
 
 ## Write
 - Write a command according to the serial specification (see below)
