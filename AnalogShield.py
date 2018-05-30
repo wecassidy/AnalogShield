@@ -231,7 +231,10 @@ class AnalogShield(object):
             return
 
         if time is None:
-            return self.ramp["period"][channel]
+            if channel == "all":
+                return self.ramp["period"]
+            else:
+                return self.ramp["period"][channel]
         elif time > 0:
             self.ramp["period"][channel] = time
             self.write("rc", channel)
@@ -252,7 +255,10 @@ class AnalogShield(object):
             return
 
         if amp is None:
-            return self.ramp["amplitude"][channel]
+            if channel == "all":
+                return self.ramp["amplitude"]
+            else:
+                return self.ramp["amplitude"][channel]
         elif 0 <= amp <= 5:
             self.ramp["amplitude"][channel] = amp
             amp_bits = AnalogShield.volts_to_bits(amp)
@@ -274,7 +280,10 @@ class AnalogShield(object):
             return
 
         if offset is None:
-            return self.ramp["offset"][channel]
+            if channel == "all":
+                return self.ramp["offset"]
+            else:
+                return self.ramp["offset"][channel]
         elif -5 <= offset <= 5:
             self.ramp["offset"][channel] = offset
             offset_bits = AnalogShield.volts_to_bits(offset)
@@ -294,7 +303,10 @@ class AnalogShield(object):
             return
 
         if phase is None:
-            return self.ramp["phase"][channel]
+            if channel == "all":
+                return self.ramp["phase"]
+            else:
+                return self.ramp["phase"][channel]
         elif 0 <= phase <= 100:
             self.ramp["phase"][channel] = phase
             phase_bits = int(phase * 65535/100) # Convert from percent to bits
@@ -315,7 +327,10 @@ class AnalogShield(object):
             return
 
         if function is None:
-            return self.ramp["function"][channel]
+            if channel == "all":
+                return self.ramp["function"]
+            else:
+                return self.ramp["function"][channel]
         elif function in ("triangle", "sin", "square"):
             self.ramp["function"][channel] = function
             func_num = {"triangle":0, "sin":1, "square":2}[function]
