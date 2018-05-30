@@ -175,7 +175,6 @@ example, if a ramp with a period of 100ms is given a phase shift of
 current value is returned.
 
 Example use:
-
 ``` python
 >>> a.ramp_phase(2, 50) # Set the offset of channel 2 to 50%
 >>> a.ramp_pahse("all", 12.5) # Set the phase of all channels to 12.5%
@@ -183,6 +182,24 @@ Example use:
 75
 >>> a.ramp_phase("all") # Query all phase shifts
 [30, 10, 50, 90]
+```
+
+### `ramp_function(channel, function=None)`: set the shape of the ramp
+Set the waveform of the ramp to one of three supported shapes:
+triangle, sin, or square. For information on how these shapes are
+defined, see the section on ramping in the documentation of the
+Arduino program. If a new function is not provided, the current value
+is returned.
+
+Example use:
+
+``` python
+>>> a.ramp_function(2, "sin") # Use a sine ramp on channel 2
+>>> a.ramp_function("all", "square") # Set all channels to a square ramp
+>>> a.ramp_function(1) # Query the waveform of channel 1
+"traingle"
+>>> a.ramp_function("all") # Query all ramp functions
+["triangle", "triangle", "sin", "square"]
 ```
 
 ## Write
