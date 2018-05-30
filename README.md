@@ -28,6 +28,18 @@ communicates between the two.
 ```
 
 # Python
+All the code to control the Analog Shield is wrapped in the class
+`AnalogShield`. The code is compatible with both Python 2 and 3
+(tested on 2.7 and 3.6) and depends on NumPy (used to calibrate the
+ADCs and DACs) and PySerial (to communicate with the Arduino).
+
+Any method that requires a channel expects it to be either an integer
+or the string `"all"`. Unless otherwise specified, `"all"` applies the
+method to all channels. In places where there is no reasonable
+behaviour for all channels (e.g. reading ADC), `"all"` is not a valid
+value for the channel. This will be noted in the documentation for
+that method.
+
 ## Initialization
 - Initialize serial communications
   - 2 Mbps baud rate
@@ -49,13 +61,12 @@ communicates between the two.
 
 ## DAC and ADC
 ### `analog_write(channel, voltage, correct=True)`: output constant voltage
-This method sets the value of one of the DACs. The channel can be
-specified as an integer or `"all"` to set all channels to the same
-level. Voltage is expected as a float. If the optional parameter
-`correct` is `True`, the method will apply the correction function
-that was determined when the DAC was calibrated (see the section on
-calibration for details on that process). If the DAC hasn't yet been
-calibrated, a warning will be printed.
+This method sets the value of one of the DACs. Voltage is expected as
+a float. If the optional parameter `correct` is `True`, the method
+will apply the correction function that was determined when the DAC
+was calibrated (see the section on calibration for details on that
+process). If the DAC hasn't yet been calibrated, a warning will be
+printed.
 
 Example use:
 ```python
@@ -66,12 +77,13 @@ Example use:
 
 ### `analog_read(channel, samples=1, correct=True)`: sample the ADC
 This method takes a number of samples (default 1) as fast as possible
-from the ADC, then returns them as a list of floats. As before, the
-channel should be an integer. If the optional parameter `correct` is
-`True` and the ADC has been calibrated, the correction function will
-be applied to the measured voltages (see the section on calibration
-for details on that process). If the ADC hasn't yet been calibrated, a
-warning will be printed.
+from the ADC, then returns them as a list of floats. This function
+cannot be applied to all channels simultaneously, so `"all"` is not a
+valid channel. If the optional parameter `correct` is `True` and the
+ADC has been calibrated, the correction function will be applied to
+the measured voltages (see the section on calibration for details on
+that process). If the ADC hasn't yet been calibrated, a warning will
+be printed.
 
 Since the ADC samples as fast as possible, a large number of samples
 can be taken and then averaged to reduce error from a noisy
