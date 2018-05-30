@@ -12,6 +12,10 @@ communicates between the two.
    ```
    $ find /dev -name 'ttyUSB*' -o -name 'ttyACM*' -o -name 'ttyAMA*'
    ```
+3. Install dependencies (NumPy and PySerial):
+   ```
+   $ pip install numpy pyserial
+   ```
 3. Connect the Python library to the shield:
    ```python
    >>> import AnalogShield as AS
