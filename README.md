@@ -87,6 +87,24 @@ Example use:
 [-0.453614561, -0.5243512614, -0.4123516421, -0.4714526141, -0.5123161424]
 ```
 
+## Ramping
+The Analog Shield can output ramps on each DAC channel in
+parallel. There are three available ramp shapes: triangle, sine, and
+square.
+
+### `ramp_running(channel)`: check if a ramp is currently enabled
+Returns `True` if a ramp is running on the given channel. Note that a
+ramp may appear not to be present if its amplitude is comparable to
+the noise of the ADCs.
+
+### `ramp_on(channel)`: enable ramping on a channel
+Enables ramping on the given channel with the current settings. If the
+channel is `"all"`, ramps on all channels are enabled.
+
+### `ramp_off(channel)`: disable ramping on a channel
+Disables ramping on the given channel. If the channel is `"all"`,
+ramps on all channels are turned off.
+
 ## Write
 - Write a command according to the serial specification (see below)
 - Accepts identifier as a string and argument as an int
