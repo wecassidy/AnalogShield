@@ -1,12 +1,13 @@
 from __future__ import print_function, division
 
-import numpy as np # For calculating means and standard deviations
 import os.path # For saving ADC and DAC calibration
 import pickle # For reading and saving calibration to a file
-import serial # For communicating with the Arduino
 import sys # Determine what version of Python is running
 import time
 import warnings
+
+import numpy as np # For calculating means and standard deviations
+import serial # For communicating with the Arduino
 
 class AnalogShield(object):
     def __init__(self, address, calibration_location=None):
@@ -197,7 +198,10 @@ class AnalogShield(object):
 
     # Ramp methods
     def ramp_running(self, channel):
-        return self.ramp["on"][channel]
+        if channel == "all":
+            return all(self.ramp["on"])
+        else:
+            return self.ramp["on"][channel]
 
     def ramp_on(self, channel):
         if channel == "all":
