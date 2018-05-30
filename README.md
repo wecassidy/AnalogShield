@@ -47,6 +47,46 @@ communicates between the two.
   `0x0000`, `0x0000`, `0x00**`. To fix this, take five samples on each
   channel
 
+## DAC and ADC
+### `analog_write(channel, voltage, correct=True)`: output constant voltage
+This method sets the value of one of the DACs. The channel can be
+specified as an integer or `"all"` to set all channels to the same
+level. Voltage is expected as a float. If the optional parameter
+`correct` is `True`, the method will apply the correction function
+that was determined when the DAC was calibrated (see the section on
+calibration for details on that process). If the DAC hasn't yet been
+calibrated, a warning will be printed.
+
+Example use:
+```python
+>>> a.analog_write(2, -3.5) # Set channel 2 to -3.5V
+>>> a.analog_write(0, 4.1, correct=False) # Set channel 0 to 4.1V while supressing error correction
+>>> a.analog_write("all", 0) # Set all channels to 0V
+```
+
+### `analog_read(channel, samples=1, correct=True)`: sample the ADC
+This method takes a number of samples (default 1) as fast as possible
+from the ADC, then returns them as a list of floats. As before, the
+channel should be an integer. If the optional parameter `correct` is
+`True` and the ADC has been calibrated, the correction function will
+be applied to the measured voltages (see the section on calibration
+for details on that process). If the ADC hasn't yet been calibrated, a
+warning will be printed.
+
+Since the ADC samples as fast as possible, a large number of samples
+can be taken and then averaged to reduce error from a noisy
+signal. The Arduino runs significantly faster than the Python code, so
+taking several samples is not significantly slower than taking just
+one.
+
+Example use:
+```python
+>>> a.analog_read(1) # Poll channel 1 once
+[1.1452345116]
+>>> a.analog_read(3, 5) # Take five samples from channel 3
+[-0.453614561, -0.5243512614, -0.4123516421, -0.4714526141, -0.5123161424]
+```
+
 ## Write
 - Write a command according to the serial specification (see below)
 - Accepts identifier as a string and argument as an int
