@@ -202,6 +202,42 @@ Example use:
 ["triangle", "triangle", "sin", "square"]
 ```
 
+## Calibration
+For some reason, the DACs and ADCs that the Analog Shield uses have a
+linear error. This means that it is easy to calculate compensation
+functions that take the nominal input/output voltage and actual
+input/output voltage (for the DACs and ADCs, respectively) and
+calculate a function so that reverses the error.
+
+<img src="https://raw.githubusercontent.com/wecassidy/AnalogShield/master/doc/dac_error.png" width="49%"><img src="https://raw.githubusercontent.com/wecassidy/AnalogShield/master/doc/adc_error.png" width="49%">
+
+The Analog Shield library provides two functions to automatically
+perform the calibration process, one for the DACs and one for the
+ADCs. Both require a multimeter that has a Python interface be
+connected to the computer. All that is required of the interface is that it
+has a method `voltage()` that returns a number. If the method is named
+something else, then it can be aliased by using the following code:
+```python
+multimeter.voltage = multimeter.other_method
+```
+
+Calibration is specific to each DAC and ADC channel. This means that
+if you want to calibrate all four of each, you will have to run the
+calibration methods eight times. A channel can be recalibrated at any
+time by rerunning the calibrate function on that channel.
+
+The error function seems to be fairly steady over time. To avoid
+having to recalibrate the input and outputs every time the shield is
+used, the correction functions will be saved to the hard drive using
+the `pickle` module if a calibration file was provided (either in the
+initializer or by later setting the value of the attribute
+`calibration_file`).
+
+The calibration functions work by measuring the error (`acutal -
+nominal`) in 1V steps from -5V to +5V, then using NumPy's polynomial
+fitting function to generate a linear function that reverses the
+error.
+
 ## Write
 - Write a command according to the serial specification (see below)
 - Accepts identifier as a string and argument as an int
