@@ -280,6 +280,18 @@ Example use:
 >>> a.dac_calibrate(2, multimeter) # Calibrate DAC 2
 ```
 
+## Queue mode
+In queue mode, the Arduino waits for an external trigger before
+executing commands. This allows for more precise timing. However, as
+it is currently structured writing a command blocks until the command
+completes. This means that execution of the program will hang if a
+command in queue mode is not triggered for a long time.
+
+There are two methods related to queue mode: `queue_on` and
+`queue_off`. As the names suggest, they enable and disable queue mode,
+respectively. Note that a queue mode off command won't execute until
+triggered, just like all other commands in queue mode.
+
 ## Write
 - Write a command according to the serial specification (see below)
 - Accepts identifier as a string and argument as an int
