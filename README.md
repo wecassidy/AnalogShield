@@ -287,34 +287,58 @@ it is currently structured writing a command blocks until the command
 completes. This means that execution of the program will hang if a
 command in queue mode is not triggered for a long time.
 
-There are two methods related to queue mode: `queue_on` and
-`queue_off`. As the names suggest, they enable and disable queue mode,
+There are two methods related to queue mode: `queue_on()` and
+`queue_off()`. As the names suggest, they enable and disable queue mode,
 respectively. Note that a queue mode off command won't execute until
 triggered, just like all other commands in queue mode.
 
-## Write
-- Write a command according to the serial specification (see below)
-- Accepts identifier as a string and argument as an int
-- Converts everything to a `bytearray` so that the code works with
-  both Python 2 and 3
-- Write to the serial port
-- Read response
-  - Read one character at a time from the serial input buffer until we
-    read a semicolon
-  - Version compatibility complications
-    - `Serial.read()` returns a `bytes` object
-    - In Python 2, `bytes` and `str` are exactly the same
-      thing. `bytes is str` returns `True`. Thus, slicing a `bytes`
-      object gives a `str`.
-    - In Python 3, `bytes` is a distinct type from `str`. Slicing
-      `bytes` gives the `int` value of the byte.
-    - As a consequence, we need two separate checks to
-      version-independently determine if a semicolon was read (and
-      therefore the response is over). In one, check if the last
-      character of the response is the string `";"`. In the other,
-      check if it is the number `0x3b` (ASCII semicolon).
-- If in Python 3, decode to a Unicode string
-- Strip the semicolon before returning
+## Backend methods
+Users shouldn't have to touch these methods, but they are documented
+here for completeness.
+
+### write(command, arg=0)
+This method writes a command to the Arduino, following the serial
+specification (see below). Its first parameter is the two-character
+identifier of the command, and the second is the argument of the
+command.
+
+This method can be broadly divided into two steps: writing the
+command, then reading the response.
+
+The command is written as a series of four bytes: first the
+two-character identifier, then the two-byte argument in big-endian
+order (MSB first).
+
+The method needs to perform some trickery to ensure that the code
+works for both Python 2's bytestrings and Python 3's Unicode
+strings. To this end, it first converts the identifier and argument
+into a four-byte `bytearray`, where the four bytes are `[first
+character, second character, MSB, LSB]`. This bytearray is written to
+the serial port.
+
+According to the serial protocol, responses are always terminated by a
+semicolon (`;`). Because of this, the method simply consumes bytes
+from the serial port until it reads a semicolon. Unfortunately,
+`Serial.read()` returns a `bytes` object, whose behaviour differs
+between Python 2 and 3. The check for a semicolon works by slicing the
+last character off the response so far. In Python 2, `bytes` and `str`
+are exactly the same thing (`bytes is str` is True), and slicing a
+`bytes` gives a string. Meanwhile, Python 3's `bytes` is a distinct
+type, and slicing it gives a number.  Therefore, two checks are
+required: either the last entity in the response must be the string
+`":"` (Python 2) or the number `0x3b` (Python 3), which is the ASCII
+code for semicolon.
+
+The method must ensure that it returns a Unicode string in Python 3,
+to avoid unexpected bugs for the end user. Therefore we decode the
+response using the Latin-1 encoding (which is back-compatible with
+ASCII while leaving the possibility of using characters `\x80`-`\xff`
+for future versions of the program, and each byte corresponds to a
+single character).
+
+The closing semicolon is required for effective operation of the
+serial protocol but adds no value or information to the response once
+read, so it is stripped before the response is returned.
 
 # Arduino
 Basic flow of the Arduino program:
