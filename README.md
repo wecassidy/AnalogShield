@@ -238,6 +238,48 @@ nominal`) in 1V steps from -5V to +5V, then using NumPy's polynomial
 fitting function to generate a linear function that reverses the
 error.
 
+### `adc_calibrate(channel, multimeter)`: calibrate an ADC
+To set up, connect DAC 0 to both the desired ADC and the
+multimeter. When the function is called, it follows the following
+algorithm:
+
+1. Start at -5V
+2. Write voltage to DAC 0
+3. Read multimeter value
+4. Sample ADC 500 times and take the mean to reduce error due to noise
+5. Increase by 1V and go to step 2
+6. Generate error compensation function
+7. If the calibration file is provided, update it with the new
+   calibration function
+
+Example use:
+```python
+>>> multimeter = HypotheticalSerialMultimeter("/dev/multimeter")
+>>> multimeter.voltage()
+1.42345
+>>> a.adc_calibrate(0, multimeter) # Calibrate ADC 0
+```
+
+### `dac_calibrate(channel, multimeter)`: calibrate a DAC
+To set up, the DAC to the multimeter. When the function is called, it
+follows the following algorithm:
+
+1. Start at -5V
+2. Write voltage to DAC, suppressing any existing error correction
+3. Read multimeter value
+4. Generate error compensation function
+5. Increase by 1V and go to step 2
+6. If the calibration file is provided, update it with the new
+   calibration function.
+
+Example use:
+```python
+>>> multimeter = HypotheticalSerialMultimeter("/dev/multimeter")
+>>> multimeter.voltage()
+2.489735
+>>> a.dac_calibrate(2, multimeter) # Calibrate DAC 2
+```
+
 ## Write
 - Write a command according to the serial specification (see below)
 - Accepts identifier as a string and argument as an int
