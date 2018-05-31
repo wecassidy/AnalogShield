@@ -1,3 +1,53 @@
+"""
+This library controls a Digilent Analog Shield connected to an Arduino
+from Python over serial. There are three layers to the system: the
+Arduino side (which controls the Analog Shield), the Python side
+(which is what is exposed to the user), and the serial protocol that
+communicates between the two.
+
+Quick start
+===========
+
+    1. Upload C{analog_shield.ino} to the Arduino
+
+    2. Determine the serial port of the Arduino
+
+    - Check the Arduino application
+
+    - Mac/Linux only::
+
+          $ find /dev -name 'ttyUSB*' -o -name 'ttyACM*' -o -name 'ttyAMA*'
+
+    3. Install dependencies (NumPy and PySerial)::
+
+           $ pip install numpy pyserial
+
+    3. Connect the Python library to the shield::
+
+           >>> import AnalogShield as AS
+           >>> a = AS.AnalogShield("/dev/analog_shield_port")
+
+Example use::
+
+    >>> a.ramp_on(0) # Ramp on DAC 0
+    >>> a.ramp_amplitude(0, 3.3) # Set the amplitude of the ramp to 3.3V
+    >>> a.analog_read(2, 3) # Take 3 samples of ADC 2
+    [0.32415, 0.314525, 0.328846]
+    >>> a.analog_write(3, -2) # Set DAC 3 to -2V
+
+All the code to control the Analog Shield is wrapped in the class
+L{AnalogShield}. The code is compatible with both Python 2 and 3
+(tested on 2.7 and 3.6) and depends on NumPy (used to calibrate the
+ADCs and DACs) and PySerial (to communicate with the Arduino).
+
+Any method that requires a channel expects it to be either an integer
+or the string C{"all"}. Unless otherwise specified, C{"all"} applies
+the method to all channels. In places where there is no reasonable
+behaviour for all channels (e.g. reading ADC), C{"all"} is not a valid
+value for the channel. This will be noted in the documentation for
+that method.
+"""
+
 from __future__ import print_function, division
 
 import os.path # For saving ADC and DAC calibration
