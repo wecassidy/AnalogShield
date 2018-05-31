@@ -205,9 +205,10 @@ class AnalogShield(object):
 
     def ramp_on(self, channel):
         if channel == "all":
+            responses = []
             for c in range(4):
-                self.ramp_on(c)
-            return
+                responses.append(self.ramp_on(c))
+            return responses
 
         self.ramp["on"][channel] = True
         self.write("rc", channel)
@@ -215,9 +216,10 @@ class AnalogShield(object):
 
     def ramp_off(self, channel):
         if channel == "all":
+            responses = []
             for c in range(4):
-                self.ramp_off(c)
-            return
+                responses.append(self.ramp_off(c))
+            return responses
 
         self.ramp["on"][channel] = False
         self.write("rc", channel)
@@ -230,15 +232,13 @@ class AnalogShield(object):
         """
 
         if channel == "all":
+            responses = []
             for c in range(4):
-                self.ramp_period(c, time)
-            return
+                responses.append(self.ramp_period(c, time))
+            return responses
 
         if time is None:
-            if channel == "all":
-                return self.ramp["period"]
-            else:
-                return self.ramp["period"][channel]
+            return self.ramp["period"][channel]
         elif time > 0:
             self.ramp["period"][channel] = time
             self.write("rc", channel)
@@ -254,15 +254,13 @@ class AnalogShield(object):
         """
 
         if channel == "all":
+            responses = []
             for c in range(4):
-                self.ramp_amplitude(c, amp)
-            return
+                responses.append(self.ramp_amplitude(c, amp))
+            return responses
 
         if amp is None:
-            if channel == "all":
-                return self.ramp["amplitude"]
-            else:
-                return self.ramp["amplitude"][channel]
+            return self.ramp["amplitude"][channel]
         elif 0 <= amp <= 5:
             self.ramp["amplitude"][channel] = amp
             amp_bits = AnalogShield.volts_to_bits(amp)
@@ -279,15 +277,13 @@ class AnalogShield(object):
         """
 
         if channel == "all":
+            responses = []
             for c in range(4):
-                self.ramp_offset(c, offset)
-            return
+                responses.append(self.ramp_offset(c, offset))
+            return responses
 
         if offset is None:
-            if channel == "all":
-                return self.ramp["offset"]
-            else:
-                return self.ramp["offset"][channel]
+            return self.ramp["offset"][channel]
         elif -5 <= offset <= 5:
             self.ramp["offset"][channel] = offset
             offset_bits = AnalogShield.volts_to_bits(offset)
@@ -302,15 +298,13 @@ class AnalogShield(object):
         """
 
         if channel == "all":
+            responses = []
             for c in range(4):
-                self.ramp_phase(c, phase)
-            return
+                responses.append(self.ramp_phase(c, phase))
+            return responses
 
         if phase is None:
-            if channel == "all":
-                return self.ramp["phase"]
-            else:
-                return self.ramp["phase"][channel]
+            return self.ramp["phase"][channel]
         elif 0 <= phase <= 100:
             self.ramp["phase"][channel] = phase
             phase_bits = int(phase * 65535/100) # Convert from percent to bits
@@ -326,15 +320,13 @@ class AnalogShield(object):
         """
 
         if channel == "all":
+            responses = []
             for c in range(4):
-                self.ramp_function(c, function)
-            return
+                responses.append(self.ramp_function(c, function))
+            return responses
 
         if function is None:
-            if channel == "all":
-                return self.ramp["function"]
-            else:
-                return self.ramp["function"][channel]
+            return self.ramp["function"][channel]
         elif function in ("triangle", "sin", "square"):
             self.ramp["function"][channel] = function
             func_num = {"triangle":0, "sin":1, "square":2}[function]
@@ -360,7 +352,7 @@ class AnalogShield(object):
                 warnings.warn("DAC channel {} is not yet calibrated.".format(channel), RuntimeWarning, stacklevel=2)
 
         val_bits = AnalogShield.volts_to_bits(val)
-        if isinstance(channel, str) and channel.lower() == "all":
+        if channel == "all":
             return self.write("va", val_bits)
         elif 0 <= channel <= 3:
             return self.write("v"+str(channel), val_bits)
