@@ -119,7 +119,7 @@ Arduino.
 
 ### `ramp_running(channel)`: check if a ramp is currently enabled
 Returns `True` if a ramp is running on the given channel. If the
-channel is "all", this will only return `True` if ramps are enabled on
+channel is `"all"`, this will only return `True` if ramps are enabled on
 all channels.
 
 ### `ramp_on(channel)`: enable ramping on a channel
@@ -208,12 +208,15 @@ Example use:
 
 ## Calibration
 For some reason, the DACs and ADCs that the Analog Shield uses have a
-linear error. This means that it is easy to calculate compensation
-functions that take the nominal input/output voltage and actual
-input/output voltage (for the DACs and ADCs, respectively) and
-calculate a function so that reverses the error.
+linear error, as can be seen in these graphs (DAC on the left, ADC on
+the right):
 
 <img src="https://raw.githubusercontent.com/wecassidy/AnalogShield/master/doc/dac_error.png" width="49%"><img src="https://raw.githubusercontent.com/wecassidy/AnalogShield/master/doc/adc_error.png" width="49%">
+
+Because the error is a linear function of the input/output voltage
+(for the DACs and ADCs, respectively), it is easy to take the nominal
+input/output voltage and actual input/output voltage and calculate a
+function that reverses the error.
 
 The Analog Shield library provides two functions to automatically
 perform the calibration process, one for the DACs and one for the
@@ -287,9 +290,9 @@ Example use:
 ## Queue mode
 In queue mode, the Arduino waits for an external trigger before
 executing commands. This allows for more precise timing. However, as
-it is currently structured writing a command blocks until the command
-completes. This means that execution of the program will hang if a
-command in queue mode is not triggered for a long time.
+it is currently written the `write` method blocks until the command
+completes, so execution of the program will hang if a command in queue
+mode is not triggered for a long time.
 
 There are two methods related to queue mode: `queue_on()` and
 `queue_off()`. As the names suggest, they enable and disable queue mode,
@@ -304,7 +307,8 @@ here for completeness.
 This method writes a command to the Arduino, following the serial
 specification (see below). Its first parameter is the two-character
 identifier of the command, and the second is the argument of the
-command.
+command. It returns the response from the Arduino, which is an
+arbitrary-length string.
 
 This method can be broadly divided into two steps: writing the
 command, then reading the response.
@@ -314,11 +318,11 @@ two-character identifier, then the two-byte argument in big-endian
 order (MSB first).
 
 The method needs to perform some trickery to ensure that the code
-works for both Python 2's bytestrings and Python 3's Unicode
-strings. To this end, it first converts the identifier and argument
-into a four-byte `bytearray`, where the four bytes are `[first
-character, second character, MSB, LSB]`. This bytearray is written to
-the serial port.
+works for a command that is either a bytestring (the default in Python
+2) or a Unicode string (the default in Python 3). To this end, it
+first converts the identifier and argument into a four-byte
+`bytearray`, where the four bytes are `[first character, second
+character, MSB, LSB]`. This bytearray is written to the serial port.
 
 According to the serial protocol, responses are always terminated by a
 semicolon (`;`). Because of this, the method simply consumes bytes
@@ -328,9 +332,9 @@ between Python 2 and 3. The check for a semicolon works by slicing the
 last character off the response so far. In Python 2, `bytes` and `str`
 are exactly the same thing (`bytes is str` is True), and slicing a
 `bytes` gives a string. Meanwhile, Python 3's `bytes` is a distinct
-type, and slicing it gives a number.  Therefore, two checks are
+type, and slicing it gives a number. Therefore, two checks are
 required: either the last entity in the response must be the string
-`":"` (Python 2) or the number `0x3b` (Python 3), which is the ASCII
+`";"` (Python 2) or the number `0x3b` (Python 3), which is the ASCII
 code for semicolon.
 
 The method must ensure that it returns a Unicode string in Python 3,
@@ -454,9 +458,9 @@ to -5V and `0xffff` corresponds to 5V).
 
 The response is an arbitrary number of ASCII characters terminated by
 a semicolon (`;`, ASCII `0x3b`). If the command completes successfully
-with no other response required, it will return "OK;". If an error
+with no other response required, it will return `OK;`. If an error
 occurs at any time, whether in parsing or executing the command, the
-response will be "??;".
+response will be `??;`.
 
 The serial protocol operates at a baud rate of 2 Mbps to reduce
 communication latency.
@@ -496,8 +500,8 @@ Default settings:
 
 ### ADC input
 
-| Command      | Identifier                  | Argument          | Function                                                                                                                                                      |
-|--------------|-----------------------------|-------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Command      | Identifier                  | Argument          | Function                                                                                                                                                  |
+|--------------|-----------------------------|-------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Read voltage | `aN` (N is the ADC channel) | Number of samples | Sample an ADC n times as quickly as possible. Returns all the readings as a series of comma-separated hex numbers (the voltages in Analog Shield format). |
 
 ### Queue mode
