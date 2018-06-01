@@ -296,7 +296,7 @@ triggered, just like all other commands in queue mode.
 Users shouldn't have to touch these methods, but they are documented
 here for completeness.
 
-### write(command, arg=0)
+### `write(command, arg=0)`
 This method writes a command to the Arduino, following the serial
 specification (see below). Its first parameter is the two-character
 identifier of the command, and the second is the argument of the
@@ -339,6 +339,20 @@ single character).
 The closing semicolon is required for effective operation of the
 serial protocol but adds no value or information to the response once
 read, so it is stripped before the response is returned.
+
+### Voltage conversion functions
+There are two functions `volts_to_bits(volts)` and
+`bits_to_volts(bits)` that convert a number from volts to bits in the
+Analog Shield format (see the Serial Protocol section for details) and
+vice versa. These two functions are static methods, so they should be
+called as:
+
+```python
+>>> AnalogShield.bits_to_volts(0xd47a)
+3.2999923704890524
+>>> AnalogShield.vots_to_bits(-2.5)
+0x3fff
+```
 
 # Arduino
 Basic flow of the Arduino program:
