@@ -23,6 +23,10 @@ communicates between the two.
    ```
 
 ## Example use
+In example code throughout this document, I will use the variable `a`
+to indicate an initialized `AnalogShield` object and `AS` to indicate
+the module itself.
+
 ```python
 >>> a.ramp_on(0) # Ramp on DAC 0
 >>> a.ramp_amplitude(0, 3.3) # Set the amplitude of the ramp to 3.3V
@@ -348,11 +352,38 @@ vice versa. These two functions are static methods, so they should be
 called as:
 
 ```python
->>> AnalogShield.bits_to_volts(0xd47a)
+>>> AS.AnalogShield.bits_to_volts(0xd47a)
 3.2999923704890524
->>> AnalogShield.vots_to_bits(-2.5)
+>>> AS.AnalogShield.vots_to_bits(-2.5)
 0x3fff
 ```
+
+### `encode_num(number)`: encode a number for serial communication
+This static method separates a two-byte number into individual bytes,
+then returns them in a list. The bytes are in big-endian (MSB first)
+order. Obtaining the two separate bytes are simple bitwise
+operations. To get the most significant byte, shift the number right
+eight bits, discarding the rightmost ones. To get the least
+significant byte, perform a bitwise AND operation with `0x00ff`,
+setting the MSB to zero while leaving the other byte untouched. Here's
+what it looks like in binary:
+
+```
+Input number: 0100 1111 0010 1011
+
+MSB: 0100 1111 0010 1011 >> 8 = 0100 1111
+LSB: 0100 1111 0010 1011 & 0000 0000 1111 1111 = 0010 1011
+```
+
+Example use:
+
+```python
+>>> AS.AnalogShield.encode_num(1234) # 1234 = 0x04d2
+[4, 210] # [0x04, 0xd2]
+```
+
+See also "Converting the argument" in the Arduino section for the
+reverse process.
 
 # Arduino
 Basic flow of the Arduino program:
