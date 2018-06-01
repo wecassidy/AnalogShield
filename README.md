@@ -15,7 +15,7 @@ communicates between the two.
 3. Use the library:
    ```python
    >>> import AnalogShield as AS
-   >>> a = AS.AnalogShield("/dev/analog_shield_port")
+   >>> a = AS.AnalogShield("/dev/analog_shield_port") # Connect to the shield
    >>> a.ramp_on(0) # Ramp on DAC 0
    >>> a.ramp_amplitude(0, 3.3) # Set the amplitude of the ramp to 3.3V
    >>> a.analog_read(2, 3) # Take 3 samples of ADC 2
@@ -23,36 +23,25 @@ communicates between the two.
    >>> a.analog_write(3, -2) # Set DAC 3 to -2V
    ```
 
+   In example code throughout this document, I will use the variable
+   `a` to indicate an initialized `AnalogShield` object and `AS` to
+   indicate the module itself.
+
 # Installation
-1. Upload `analog_shield.ino` to the Arduino
-2. Determine the serial port of the Arduino
-   - Check the Arduino application
-   - Mac/Linux only:
+1. Clone the repository:
    ```
-   $ find /dev -name 'ttyUSB*' -o -name 'ttyACM*' -o -name 'ttyAMA*'
+   $ git clone https://github.com/wecassidy/AnalogShield.git
    ```
+2. Upload `analog_shield.ino` to the Arduino
 3. Install dependencies (NumPy and PySerial):
    ```
    $ pip install numpy pyserial
    ```
-3. Connect the Python library to the shield:
+4. Connect the Python library to the shield:
    ```python
    >>> import AnalogShield as AS
    >>> a = AS.AnalogShield("/dev/analog_shield_port")
    ```
-
-## Example use
-In example code throughout this document, I will use the variable `a`
-to indicate an initialized `AnalogShield` object and `AS` to indicate
-the module itself.
-
-```python
->>> a.ramp_on(0) # Ramp on DAC 0
->>> a.ramp_amplitude(0, 3.3) # Set the amplitude of the ramp to 3.3V
->>> a.analog_read(2, 3) # Take 3 samples of ADC 2
-[0.32415, 0.314525, 0.328846]
->>> a.analog_write(3, -2) # Set DAC 3 to -2V
-```
 
 # Python
 All the code to control the Analog Shield is wrapped in the class
