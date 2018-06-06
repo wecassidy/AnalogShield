@@ -57,6 +57,28 @@ value for the channel. This will be noted in the documentation for
 that method.
 
 ## Initialization
+The initializer for the `AnalogShield` class has one mandatory
+argument and one optional one. The mandatory argument is the serial
+address of the shield. On Linux systems, this will be something like
+`/dev/tty*`. The optional parameter is the path of a calibration file
+for the DACs and ADCs. If it is not provided, the analogue IOs will be
+uncalibrated and future calibrations will not be saved. If it is
+provided but the file doesn't exist, the analogue IOs will still be
+uncalibrated but future calibrations will be saved. If the file
+exists, any saved calibrations will be loaded and future calibrations
+will be saved to the same location. If, for some reason, you want to
+specify the calibration file after the initializer, do it by setting
+the `calibration_location` property of the shield object. See the
+section on calibration below for more information on the process.
+
+The primary task of the initializer is to open up serial
+communications with the Arduino. The baud rate is 2 Mbps, in
+accordance with the serial specification. The timeout of the serial
+device is set to 0, meaning that `Serial.read()` will always return
+whatever is in the input buffer and exit immediately. The initializer
+also sets up the shield in a known default state.
+
+Summary of the actions the initializer performs:
 - Initialize serial communications
   - 2 Mbps baud rate
   - Set timeout to 0
@@ -87,7 +109,7 @@ printed.
 Example use:
 ```python
 >>> a.analog_write(2, -3.5) # Set channel 2 to -3.5V
->>> a.analog_write(0, 4.1, correct=False) # Set channel 0 to 4.1V while supressing error correction
+>>> a.analog_write(0, 4.1, correct=False) # Set channel 0 to 4.1V while suppressing error correction
 >>> a.analog_write("all", 0) # Set all channels to 0V
 ```
 
@@ -127,8 +149,8 @@ Arduino.
 
 ### `ramp_running(channel)`: check if a ramp is currently enabled
 Returns `True` if a ramp is running on the given channel. If the
-channel is `"all"`, this will only return `True` if ramps are enabled on
-all channels.
+channel is `"all"`, this will only return `True` if ramps are enabled
+on all channels.
 
 ### `ramp_on(channel)`: enable ramping on a channel
 Enables ramping on the given channel with the current settings.
@@ -189,7 +211,7 @@ current value is returned.
 Example use:
 ``` python
 >>> a.ramp_phase(2, 50) # Set the offset of channel 2 to 50%
->>> a.ramp_pahse("all", 12.5) # Set the phase of all channels to 12.5%
+>>> a.ramp_phase("all", 12.5) # Set the phase of all channels to 12.5%
 >>> a.ramp_phase(1) # Query the phase of channel 1
 75
 >>> a.ramp_phase("all") # Query all phase shifts
@@ -203,8 +225,9 @@ defined, see the section on ramping in the documentation of the
 Arduino program. If a new function is not provided, the current value
 is returned.
 
-Here are what the three ramp functions look like (at amplitude 5V, offset 0V, and period
-100ms). From left to right: triangle, sine, square.
+Here are what the three ramp functions look like (at amplitude 5V,
+offset 0V, and period 100ms). From left to right: triangle, sine,
+square.
 
 <img
 src="https://raw.githubusercontent.com/wecassidy/AnalogShield/master/doc/triangle.png"
@@ -220,7 +243,7 @@ Example use:
 >>> a.ramp_function(2, "sin") # Use a sine ramp on channel 2
 >>> a.ramp_function("all", "square") # Set all channels to a square ramp
 >>> a.ramp_function(1) # Query the waveform of channel 1
-"traingle"
+"triangle"
 >>> a.ramp_function("all") # Query all ramp functions
 ["triangle", "triangle", "sin", "square"]
 ```
@@ -230,7 +253,11 @@ For some reason, the DACs and ADCs that the Analog Shield uses have a
 linear error, as can be seen in these graphs (DAC on the left, ADC on
 the right):
 
-<img src="https://raw.githubusercontent.com/wecassidy/AnalogShield/master/doc/dac_error.png" width="49%"><img src="https://raw.githubusercontent.com/wecassidy/AnalogShield/master/doc/adc_error.png" width="49%">
+<img
+src="https://raw.githubusercontent.com/wecassidy/AnalogShield/master/doc/dac_error.png"
+width="49%"><img
+src="https://raw.githubusercontent.com/wecassidy/AnalogShield/master/doc/adc_error.png"
+width="49%">
 
 Because the error is a linear function of the input/output voltage
 (for the DACs and ADCs, respectively), it is easy to take the nominal
@@ -259,7 +286,7 @@ the `pickle` module if a calibration file was provided (either in the
 initializer or by later setting the value of the attribute
 `calibration_file`).
 
-The calibration functions work by measuring the error (`acutal -
+The calibration functions work by measuring the error (`actual -
 nominal`) in 1V steps from -5V to +5V, then using NumPy's polynomial
 fitting function to generate a linear function that reverses the
 error.
@@ -314,9 +341,9 @@ completes, so execution of the program will hang if a command in queue
 mode is not triggered for a long time.
 
 There are two methods related to queue mode: `queue_on()` and
-`queue_off()`. As the names suggest, they enable and disable queue mode,
-respectively. Note that a queue mode off command won't execute until
-triggered, just like all other commands in queue mode.
+`queue_off()`. As the names suggest, they enable and disable queue
+mode, respectively. Note that a queue mode off command won't execute
+until triggered, just like all other commands in queue mode.
 
 ## Backend methods
 Users shouldn't have to touch these methods, but they are documented
@@ -475,8 +502,8 @@ formatted is specific to each command. It may be interpreted as a
 16-bit integer, it may be ignored, or it may be used another way
 entirely. Commands which have similar functions are grouped by having
 the same first character. Voltages are always communicated using the
-bit format used by the Analog Shield library (i.e. `0x0000` corresponds
-to -5V and `0xffff` corresponds to 5V).
+bit format used by the Analog Shield library (i.e. `0x0000`
+corresponds to -5V and `0xffff` corresponds to 5V).
 
 The response is an arbitrary number of ASCII characters terminated by
 a semicolon (`;`, ASCII `0x3b`). If the command completes successfully
